@@ -9,8 +9,11 @@ using namespace std;
 class Player {
 
 public:
-    Player(Side side);
+    Player(Side s);
     ~Player();
+
+    Board board;
+    Side side;
 
     Move *doMove(Move *opponentsMove, int msLeft);
 

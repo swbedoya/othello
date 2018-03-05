@@ -5,10 +5,11 @@
  * on (BLACK or WHITE) is passed in as "side". The constructor must finish
  * within 30 seconds.
  */
-Player::Player(Side side) {
+Player::Player(Side s) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
 
+    side = s;
     /*
      * TODO: Do any initialization you need to do here (setting up the board,
      * precalculating things, etc.) However, remember that you will only have
@@ -40,5 +41,33 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */
-    return nullptr;
+    (side == WHITE) ? board.doMove(opponentsMove, BLACK) : 
+                      board.doMove(opponentsMove, WHITE);
+
+    if (!board.hasMoves(side))
+    {
+        return nullptr;
+    }
+
+    int random, x, y;
+    Move* move = new Move(0, 0);
+
+    while (true)
+    {
+        random = rand() % 64;
+        x = random % 8;
+        y = random / 8;
+
+        move->setX(x);
+        move->setY(y);
+
+        if (board.checkMove(move, side))
+        {
+            break;
+        }
+    }
+
+    board.doMove(move, side);
+    return move;
 }
+
