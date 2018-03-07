@@ -16,6 +16,8 @@ public:
     Side side;
 
     Move *doMove(Move *opponentsMove, int msLeft);
+    Move *randomMove();
+    Move *heuristicMove();
 
     // Flag to tell if the player is running within the test_minimax context
     bool testingMinimax;

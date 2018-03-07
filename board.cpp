@@ -68,17 +68,19 @@ bool Board::hasMoves(Side side) {
 }
 
 /*
- * Returns true if a move is legal for the given side; false otherwise.
+ * Returns 0 if the move is not legal, otherwise returns the number of tiles 
+ * that would be taken if this move was played
  */
-bool Board::checkMove(Move *m, Side side) {
+int Board::checkMove(Move *m, Side side) {
     // Passing is only legal if you have no moves.
     if (m == nullptr) return !hasMoves(side);
 
     int X = m->getX();
     int Y = m->getY();
+    int total_count = 0, current_count;
 
     // Make sure the square hasn't already been taken.
-    if (occupied(X, Y)) return false;
+    if (occupied(X, Y)) return 0;
 
     Side other = (side == BLACK) ? WHITE : BLACK;
     for (int dx = -1; dx <= 1; dx++) {
@@ -86,19 +88,29 @@ bool Board::checkMove(Move *m, Side side) {
             if (dy == 0 && dx == 0) continue;
 
             // Is there a capture in that direction?
+            current_count = 0;
             int x = X + dx;
             int y = Y + dy;
             if (onBoard(x, y) && get(other, x, y)) {
+
+                // Keep track of the count of captured pieces
                 do {
                     x += dx;
                     y += dy;
+                    current_count++;
                 } while (onBoard(x, y) && get(other, x, y));
 
-                if (onBoard(x, y) && get(side, x, y)) return true;
+                // Store how many pieces would be captured 
+                if (onBoard(x, y) && get(side, x, y)) 
+                {
+                    total_count += current_count;
+                }
             }
         }
     }
-    return false;
+    // Return the total count of pieces that would be taken, which is zero 
+    // if this move isn't legal
+    return total_count;
 }
 
 /*
