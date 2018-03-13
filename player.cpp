@@ -10,11 +10,6 @@ Player::Player(Side s) {
     testingMinimax = false;
 
     side = s;
-    /*
-     * TODO: Do any initialization you need to do here (setting up the board,
-     * precalculating things, etc.) However, remember that you will only have
-     * 30 seconds.
-     */
 }
 
 /*
@@ -96,18 +91,18 @@ Move *Player::heuristicMove () {
     // Multiply the spots adjacent to the corners by -3 to make sure we take 
     // these spots only if we have to (since capture of the corner by the 
     // other side is likely)
-    score[1] *= -3;
-    score[6] *= -3;
-    score[8] *= -3;
+    score[1] *= -1;
+    score[6] *= -1;
+    score[8] *= -1;
     score[9] *= -3;
     score[14] *= -3;
-    score[15] *= -3;
-    score[48] *= -3;
+    score[15] *= -1;
+    score[48] *= -1;
     score[49] *= -3;
     score[54] *= -3;
-    score[55] *= -3;
-    score[57] *= -3;
-    score[62] *= -3;
+    score[55] *= -1;
+    score[57] *= -1;
+    score[62] *= -1;
 
     // Multiply the spots in the corner by 3 to make them more likely to be 
     // taken
@@ -161,4 +156,114 @@ Move *Player::heuristicMove () {
     move->setY(max / 8);
 
     return move;
+}
+
+
+
+/*
+ * Attempted minimax move but kept running into errors, ran out of time
+ * before time assignment was due
+ */
+Move *Player::minimaxMove() {
+    // Initialize scores array to give every position a score of zero
+    int score[64] = {0}, score2[64] = {0}, max = 64, next = 64;
+
+    Move* move = new Move(0, 0); 
+
+    // Store the first position's score, which we have defined as the number
+    // of tiles we would capture if we moved here (the checkMove function 
+    // has also been altered to reflect this)
+    score[0] = board.checkMove(move, side);
+
+    // Do the same for every other position
+    for (int i = 1; i < 64; ++i)
+    {
+        move->setX(i % 8);
+        move->setY(i / 8);
+
+        score[i] = board.checkMove(move, side);
+    }
+
+    for (int i = 0; i < 64; ++i)
+    {
+        if (score[i] != 0)
+        {
+            move->setX(i % 8);
+            move->setY(i / 8);
+
+            Board copy = *board.copy();
+            copy.doMove(move, side);
+
+            for (int i = 1; i < 64; ++i)
+            {
+                move->setX(i % 8);
+                move->setY(i / 8);
+
+                score2[i] = copy.checkMove(move, side);
+            }
+
+            max = 64;
+
+            // Find the first nonzero score
+            for (int i = 0; i < 64; i++)
+            {
+                if (score2[i] != 0)
+                {
+                    max = i;
+                    next = i + 1;
+                    break;
+                }
+            }
+
+            // Look at the rest of the scores to see if we have any that are larger
+            // (and nonzero in case there are only negative scores)
+            for (; next < 64; next++)
+            {
+                if (score2[next] > score2[max] && score2[next] != 0)
+                {
+                    max = next;
+                }
+            }
+
+            if (max != 64) 
+            {
+                score[i] += score2[max];
+            }
+
+            //delete &copy; // created warnings on compilation but is 
+                            // necessary to prevent memory leaks
+        }
+    }
+
+    max = 64;
+
+    // Find the first nonzero score
+    for (int i = 0; i < 64; i++)
+    {
+        if (score[i] != 0)
+        {
+            max = i;
+            next = i + 1;
+            break;
+        }
+    }
+
+    // Look at the rest of the scores to see if we have any that are larger
+    // (and nonzero in case there are only negative scores)
+    for (; next < 64; next++)
+    {
+        if (score[next] > score[max] && score[next] != 0)
+        {
+            max = next;
+        }
+    }
+
+    // If this is true, max was never changed, so all scores are zero and no
+    // moves are possible
+    if (max == 64) return nullptr;
+
+    // Otherwise, reset the move and return it
+    Move *final = new Move(max % 8, max / 8);
+
+    return final;
 }
